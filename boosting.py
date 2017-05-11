@@ -6,8 +6,10 @@ from sklearn.model_selection import GridSearchCV
 
 
 
+# Boosting
 def run_RandomForestRegressor(n_estimators=10,  criterion='mse', max_depth=None, oob_score=False, n_jobs=-1, random_state=None):
     rfr = RandomForestRegressor(n_estimators=n_estimators,  criterion=criterion, max_depth=max_depth, oob_score=oob_score, n_jobs=n_jobs, random_state=random_state)
+    # X and y weren't passed in
     rfr.fit(X, y)
     if X_test != None:
         return rfr, rfr.predict(X_test)
@@ -43,7 +45,6 @@ def stage_score_plot(estimator, X_train, y_train, X_test, y_test):
                 y_train: 1d numpy array
                 X_test: 2d numpy array
                 y_test: 1d numpy array
-
     Returns: A plot of the number of iterations vs the MSE for the model for
     both the training set and test set.
     '''

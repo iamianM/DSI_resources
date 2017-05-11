@@ -1,8 +1,12 @@
 from sklearn.decomposition import PCA
-
+from matplotlib.pyplot import plt
 
 
 #PCA
+def run_PCA(df, n_components=None):
+    pca = PCA(n_components=components).fit(df)
+    return pca, pca.transform(df)
+
 def scree_plot(pca, title=None):
     num_components = pca.n_components_
     ind = np.arange(num_components)
@@ -34,6 +38,35 @@ def scree_plot(pca, title=None):
 
     ax.set_xlabel("Principal Component", fontsize=12)
     ax.set_ylabel("Variance Explained (%)", fontsize=12)
+
+    if title is not None:
+        plt.title(title, fontsize=16)
+
+
+def plot_embedding(X, y, title=None):
+    '''
+    INPUT:
+    X - decomposed feature matrix
+    y - target labels (digits)
+    Creates a pyplot object showing digits projected onto 2-dimensional
+    feature space. PCA should be performed on the feature matrix before
+    passing it to plot_embedding.
+    '''
+    x_min, x_max = np.min(X, 0), np.max(X, 0)
+    X = (X - x_min) / (x_max - x_min)
+
+    plt.figure(figsize=(10, 6), dpi=250)
+    ax = plt.subplot(111)
+    ax.axis('off')
+    ax.patch.set_visible(False)
+    for i in range(X.shape[0]):
+        plt.text(X[i, 0], X[i, 1], str(y[i]),
+                 color=plt.cm.Set1(y[i] / 10.),
+                 fontdict={'weight': 'bold', 'size': 12})
+
+    plt.xticks([]), plt.yticks([])
+    plt.ylim([-0.1,1.1])
+    plt.xlim([-0.1,1.1])
 
     if title is not None:
         plt.title(title, fontsize=16)

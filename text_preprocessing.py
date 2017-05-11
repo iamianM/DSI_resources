@@ -13,14 +13,14 @@ def run_tokenizer(content):
     Takes nx1 array where column is strings.
     Outputs list of strings
     '''
-    sws = set(stopwords.words('english'))
+    stopwords = set(stopwords.words('english'))
     wordnet = WordNetLemmatizer()
     toks = []
     for i, c in enumerate(content):
         if len(c) != 0:
             c = ''.join([l for l in c if l in printable])
             wt = word_tokenize(c)
-            c = [w for w in wt if w.lower() not in sws]
+            c = [w for w in wt if w.lower() not in stopwords]
             lemmatized = [wordnet.lemmatize(i) for i in c]
             toks.append(' '.join(lemmatized))
     return toks

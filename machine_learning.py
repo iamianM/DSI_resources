@@ -11,7 +11,6 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, dendrogram
 
 
-
 # Machine Learning
 def run_OLS(X, y, X_test=None):
     ols = sm.OLS(y_train, X_train)
@@ -37,31 +36,41 @@ def run_LogisticRegression(X, y, X_test=None):
     else:
         return lr
 
-def run_RandomForestClassifier(X, y, X_test=None, n_estimators=10, oob_score=False, n_jobs=-1, max_depth=None):
-    rfc = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, oob_score=oob_score, n_jobs=n_jobs)
+def run_RandomForestClassifier(X, y, X_test=None, **kwargs):
+    rfc = RandomForestClassifier(**kwargs)
     rfc.fit(X, y)
-    if X_test != None:
+    if X_test is not None:
         return rfc, rfc.predict(X_test)
     else:
         return rfc
 
-def run_lSVC(X, y, X_test=None):
-    lSVC = LinearSVC()
+def run_lSVC(X, y, X_test=None, **kwargs):
+    lSVC = LinearSVC(**kwargs)
     lSVC.fit(X, y)
     if X_test != None:
         return lSVC, lSVC.predict(X_test)
     else:
         return lSVC
 
-def run_SVC(X, y, X_test=None, C=1.0, kernel='rbf', degree=3, scale=True):
+def run_SVC(X, y, X_test=None, scale=True, **kwargs):
+    # All kwargs are all passed along to SVC object
+    model_args = {'model__{}'.format(k): v for k, v in iteritems(kwargs)}
+
     if scale:
-        X_new = StandardScaler().fit_transform(X)
-    svc = SVC(C=1.0, kernel=kernel, degree=degree)
-    svc.fit(X_new)
-    if X_test != None:
-        return svc, svc.predict(X_test)
+        model = Pipeline([
+            ('scaler', StandardScaler),
+            ('model', SVC)
+        ])
     else:
-        return svc
+        model = Pipeline([('model', SVC)])
+
+    model.set_params(**model_args)
+
+    model.fit(X, y)
+    if X_test is not None:
+        return model, model.predict(X_test)
+    else:
+        return model
 
 def run_KNeighborsClassifier(X, y, X_test=None, n_neighbors=5, weights='uniform', metric='minkowski', n_jobs=-1):
     knn = KNeighborsClassifier(n_neighbors=3)
@@ -93,3 +102,30 @@ def run_GaussianNB(X, y, priors=None):
         return gnb, gnb.predict(X_test)
     else:
         return gnb
+
+# A bunch of these functions are super repeditive
+# This is much more abstract and replaces a lot of these
+def run_model(cls, X, y, X_test=None, scale=False, **kwargs):
+    # All kwargs are all passed along to SVC object
+    model_args = {'model__{}'.format(k): v for k, v in iteritems(kwargs)}
+
+    if scale:
+        model = Pipeline([
+            ('scaler', StandardScaler),
+            ('model', cls)
+        ])
+    else:
+        model = Pipeline([('model', cls)])
+
+    # Pass all given args to the specified model
+    model.set_params(**model_args)
+    # Fit the model to the given training data
+    model.fit(X, y)
+
+    if X_test is not None:
+        return model, model.predict(X_test)
+    else:
+        return model
+
+# example usage
+# run_model(RandomForestRegressor, X, y, X_test, scale=False, n_estimators=10, n_jobs=-1)
